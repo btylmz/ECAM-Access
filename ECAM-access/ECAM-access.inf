@@ -1,0 +1,62 @@
+;
+; ECAM-access.inf
+;
+
+[Version]
+Signature   = "$WINDOWS NT$"
+Class       = System ; TODO: specify appropriate Class
+ClassGuid   = {4d36e97d-e325-11ce-bfc1-08002be10318} ; TODO: specify appropriate ClassGuid
+Provider    = %ManufacturerName%
+CatalogFile = ECAM-access.cat
+DriverVer   = ; TODO: set DriverVer in stampinf property pages
+PnpLockdown = 1
+
+[DestinationDirs]
+DefaultDestDir = 13
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+ECAM-access.sys = 1,,
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName% = Standard,NT$ARCH$.10.0...16299 ; %13% support introduced in build 16299
+
+[Standard.NT$ARCH$.10.0...16299]
+%ECAM-access.DeviceDesc% = ECAM-access_Device, Root\ECAM-access ; TODO: edit hw-id
+
+[ECAM-access_Device.NT]
+CopyFiles = File_Copy
+
+[File_Copy]
+ECAM-access.sys
+
+;-------------- Service installation
+[ECAM-access_Device.NT.Services]
+AddService = ECAM-access,%SPSVCINST_ASSOCSERVICE%, ECAM-access_Service_Inst
+
+; -------------- ECAM-access driver install sections
+[ECAM-access_Service_Inst]
+DisplayName    = %ECAM-access.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %13%\ECAM-access.sys
+
+[ECAM-access_Device.NT.Wdf]
+KmdfService = ECAM-access, ECAM-access_wdfsect
+
+[ECAM-access_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE = 0x00000002
+ManufacturerName = "DEICO Engineering" 
+DiskName = "EMAC-access Installation Disk"
+ECAM-access.DeviceDesc = "ECAM Access Device"
+ECAM-access.SVCDESC = "ECAM-access Service"

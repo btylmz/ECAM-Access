@@ -1,0 +1,9 @@
+LIBRARY ECAM-access
+EXPORTS
+	InitializeLib
+	ReadPciConfigDword
+	GetPciDeviceId
+	GetPciBusNumbers
+	FindPciDevices
+	FindPciDevicesEx
+	
