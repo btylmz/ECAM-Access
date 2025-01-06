@@ -35,36 +35,36 @@ ECAMAccessEvtDeviceControl(WDFQUEUE   Queue,
     {
         case IOCTL_INITIATE_ECAM_ACCESS:
         {
-			ULONG64 *baseAddress;
-			status = WdfRequestRetrieveInputBuffer(Request,
-				sizeof(ULONG64),
-				reinterpret_cast<PVOID*>(&baseAddress),
-				nullptr);
+            ULONG64* baseAddress;
+            status = WdfRequestRetrieveInputBuffer(Request,
+                sizeof(ULONG64),
+                reinterpret_cast<PVOID*>(&baseAddress),
+                nullptr);
 
-			if (!NT_SUCCESS(status))
-			{
-#if DBG
-				DbgPrint("Failed to retrieve input buffer\n");
-#endif
-				goto Done;
-			}
+            if (!NT_SUCCESS(status))
+            {
+    #if DBG
+                DbgPrint("Failed to retrieve input buffer\n");
+    #endif
+                goto Done;
+            }
 
-			deviceContext->EcamBaseAddress = *baseAddress;
+            deviceContext->EcamBaseAddress = *baseAddress;
 
-			WdfRequestCompleteWithInformation(Request,
-				status,
-				sizeof(ULONG64));
+            WdfRequestCompleteWithInformation(Request,
+                status,
+                sizeof(ULONG64));
 
-#if DBG
-			DbgPrint("Initiated ECAM access, base address: %llx\n", deviceContext->EcamBaseAddress);
-#endif
+    #if DBG
+            DbgPrint("Initiated ECAM access, base address: %llx\n", deviceContext->EcamBaseAddress);
+    #endif
 
             return;
         }
 
-	    case IOCTL_READ_DWORD_ECAM:
+        case IOCTL_READ_DWORD_ECAM:
         {
-			ULONG* value;
+            ULONG* value;
             status = WdfRequestRetrieveInputBuffer(Request,
                 sizeof(BUS_INFO),
                 reinterpret_cast<PVOID*>(&busInfo),
@@ -75,15 +75,15 @@ ECAMAccessEvtDeviceControl(WDFQUEUE   Queue,
                 goto Done;
             }
 
-			status = WdfRequestRetrieveOutputBuffer(Request,
-				sizeof(ULONG),
-				reinterpret_cast<PVOID*>(&value),
-				nullptr);
+            status = WdfRequestRetrieveOutputBuffer(Request,
+                sizeof(ULONG),
+                reinterpret_cast<PVOID*>(&value),
+                nullptr);
 
-			if (!NT_SUCCESS(status))
-			{
-				goto Done;
-			}
+            if (!NT_SUCCESS(status))
+            {
+                goto Done;
+            }
 
             PHYSICAL_ADDRESS ECAMAddress;
             ECAMAddress.QuadPart = deviceContext->EcamBaseAddress + (busInfo->b << 20) + (busInfo->d << 15) + (busInfo->f << 12);
@@ -99,53 +99,53 @@ ECAMAccessEvtDeviceControl(WDFQUEUE   Queue,
 
             MmUnmapIoSpace(configSpace, 4096);
 
-			WdfRequestCompleteWithInformation(Request,
-				status,
-				sizeof(ULONG));
+            WdfRequestCompleteWithInformation(Request,
+                status,
+                sizeof(ULONG));
 
             return;
         }
 
         case IOCTL_FIND_PCI_DEVICES:
         {
-			PCI_DEVICE_INFO* deviceList;
-			ULONG foundDevices = 0;
+            PCI_DEVICE_INFO* deviceList;
+            ULONG foundDevices = 0;
             UCHAR maxBusNumber = 0, maxDeviceNumber = 0, maxFunctionNumber = 0;
             PSEARCH_INFO searchInfo;
             ULONG value;
-			USHORT vendorID, deviceID;
+            USHORT vendorID, deviceID;
             ULONG maxSize = 0;
 
-			status = WdfRequestRetrieveInputBuffer(Request,
+            status = WdfRequestRetrieveInputBuffer(Request,
                 sizeof(SEARCH_INFO),
-				reinterpret_cast<PVOID*>(&searchInfo),
-				nullptr);
+                reinterpret_cast<PVOID*>(&searchInfo),
+                nullptr);
 
-			if (!NT_SUCCESS(status))
-			{
-#if DBG
-				DbgPrint("Failed to retrieve input buffer\n");
-#endif
-				goto Done;
-			}
+            if (!NT_SUCCESS(status))
+            {
+    #if DBG
+                DbgPrint("Failed to retrieve input buffer\n");
+    #endif
+                goto Done;
+            }
 
-			status = WdfRequestRetrieveOutputBuffer(Request,
-				sizeof(PCI_DEVICE_INFO) * searchInfo->MaxSize,
-				reinterpret_cast<PVOID*>(&deviceList),
-				nullptr);
+            status = WdfRequestRetrieveOutputBuffer(Request,
+                sizeof(PCI_DEVICE_INFO) * searchInfo->MaxSize,
+                reinterpret_cast<PVOID*>(&deviceList),
+                nullptr);
 
-			if (!NT_SUCCESS(status))
-			{
-#if DBG
-				DbgPrint("Failed to retrieve output buffer\n");
-#endif
-				goto Done;
-			}
+            if (!NT_SUCCESS(status))
+            {
+    #if DBG
+                DbgPrint("Failed to retrieve output buffer\n");
+    #endif
+                goto Done;
+            }
 
-			maxSize = searchInfo->MaxSize;
-			maxBusNumber = searchInfo->MaxBusNumber;
-			maxDeviceNumber = searchInfo->MaxDeviceNumber;
-			maxFunctionNumber = searchInfo->MaxFunctionNumber;
+            maxSize = searchInfo->MaxSize;
+            maxBusNumber = searchInfo->MaxBusNumber;
+            maxDeviceNumber = searchInfo->MaxDeviceNumber;
+            maxFunctionNumber = searchInfo->MaxFunctionNumber;
 
             for (UCHAR b = 0; b < maxBusNumber; b++)
             {
@@ -172,11 +172,11 @@ ECAMAccessEvtDeviceControl(WDFQUEUE   Queue,
 
                         if (vendorID == searchInfo->VendorID && deviceID == searchInfo->DeviceID)
                         {
-							deviceList[foundDevices].VendorID = vendorID;
-							deviceList[foundDevices].DeviceID = deviceID;
-							deviceList[foundDevices].BusNumber = b;
-							deviceList[foundDevices].DeviceNumber = d;
-							deviceList[foundDevices].FunctionNumber = f;
+                            deviceList[foundDevices].VendorID = vendorID;
+                            deviceList[foundDevices].DeviceID = deviceID;
+                            deviceList[foundDevices].BusNumber = b;
+                            deviceList[foundDevices].DeviceNumber = d;
+                            deviceList[foundDevices].FunctionNumber = f;
 
                             foundDevices++;
                             maxSize--;
@@ -203,13 +203,13 @@ ECAMAccessEvtDeviceControl(WDFQUEUE   Queue,
 
             return;
         }
-    
+
         case IOCTL_READ_LINK_WIDTH:
         {
             USHORT value;
-			UCHAR capabilityRegisterPointer;
-			UCHAR capabilityRegisterId;
-			ULONG* linkWidth = 0;
+            UCHAR capabilityRegisterPointer;
+            UCHAR capabilityRegisterId;
+            ULONG* linkWidth = 0;
 
             status = WdfRequestRetrieveInputBuffer(Request,
                 sizeof(BUS_INFO),
@@ -243,38 +243,40 @@ ECAMAccessEvtDeviceControl(WDFQUEUE   Queue,
 
             // Read capabilities pointer
             value = READ_REGISTER_USHORT(reinterpret_cast<PUSHORT>(static_cast<PUCHAR>(configSpace) + 0x34));
-            capabilityRegisterPointer = (value >> 8) & 0xff;
+            capabilityRegisterPointer = value & 0xff;
 
-			// If capabilities pointer is zero, then the device does not support PCI Express
-            if (capabilityRegisterPointer == 0x00)
+            // If capabilities pointer is zero, then the device does not support PCI Express
+            if (capabilityRegisterPointer == 0x00 || capabilityRegisterPointer == 0xff)
             {
-				status = STATUS_NOT_SUPPORTED;
-				MmUnmapIoSpace(configSpace, 256);
-				goto Done;
+                status = STATUS_NOT_SUPPORTED;
+                MmUnmapIoSpace(configSpace, 256);
+                goto Done;
             }
 
-			// Read until we find the link capabilities register
+            // Read until we find the link capabilities register
             while (1)
             {
                 value = READ_REGISTER_USHORT(reinterpret_cast<PUSHORT>(static_cast<PUCHAR>(configSpace) + capabilityRegisterPointer));
                 capabilityRegisterId = value & 0xff;
+
+
+                if (capabilityRegisterId == 0x10)
+                {
+                    // Read PCI Express capabilities register
+                    value = READ_REGISTER_USHORT(reinterpret_cast<PUSHORT>(static_cast<PUCHAR>(configSpace) + capabilityRegisterPointer + 0x12));
+
+                    // First 4 bits is LinkSpeed, next 6 bits is LinkWidth
+                    *linkWidth = (value >> 4) & 0x3f;
+
+                    break;
+                }
+                else if (capabilityRegisterId == 0x00 || capabilityRegisterPointer == 0x00 || capabilityRegisterPointer == 0xff)
+                {
+                    status = STATUS_NOT_SUPPORTED;
+                    break;
+                }
+
                 capabilityRegisterPointer = (value >> 8) & 0xff;
-
-				if (capabilityRegisterId == 0x10)
-				{
-					// Read PCI Express capabilities register
-					value = READ_REGISTER_USHORT(reinterpret_cast<PUSHORT>(static_cast<PUCHAR>(configSpace) + capabilityRegisterPointer + 0x12));
-
-					// First 4 bits is LinkSpeed, next 6 bits is LinkWidth
-					*linkWidth = (value >> 4) & 0x3f;
-
-					break;
-				}
-				else if (capabilityRegisterId == 0x00)
-				{
-					status = STATUS_NOT_SUPPORTED;
-					break;
-				}
 
             }
 
@@ -288,14 +290,14 @@ ECAMAccessEvtDeviceControl(WDFQUEUE   Queue,
 
         }
 
-     }
- 
+    }
+
 Done:
 
     WdfRequestCompleteWithInformation(Request,
         status,
         0);
 
-	return;
+    return;
 }
 

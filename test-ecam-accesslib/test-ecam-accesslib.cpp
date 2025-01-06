@@ -52,17 +52,20 @@ static void TestFindPciDevices()
 static void TestFindLinkWidth()
 {
 	// Ask the user for bus parameters
-	UINT8 bus, device, function;
+	UINT16 bus, device, function;
 	UINT32 linkWidth;
 
-	std::cout << "Enter bus number: ";
-	std::cin >> bus;
+	// Get bus, device and function numbers from user as hex
+	std::cout << "Enter bus number (hex): 0x";
+	std::cin >> std::hex >> bus;
 
-	std::cout << "Enter device number: ";
-	std::cin >> device;
+	std::cout << "Enter device number (hex): 0x";
+	std::cin >> std::hex >> device;
 
-	std::cout << "Enter function number: ";
-	std::cin >> function;
+	std::cout << "Enter function number (hex): 0x";
+	std::cin >> std::hex >> function;
+
+	printf("Searching for link width of device %d:%d:%d\n", bus, device, function);
 
 	int status = FindLinkWidth(bus, device, function, &linkWidth);
 
@@ -77,7 +80,7 @@ static void TestFindLinkWidth()
 
 int main()
 {
-    int status = InitializeLib();
+	int status = InitializeLib();
 
 	if (status != 0) {
 		std::cerr << "Failed to initialize library.\n";
@@ -85,7 +88,7 @@ int main()
 	}
 
 	TestFindLinkWidth();
-	
+
 	return 0;
 }
 
